@@ -8,11 +8,24 @@
   },
   "scripts": {
     "test": "tape test/*.js",
-    "browserify": "browserify test/test.js > test/test_bundle.js"
+    "browserify": "browserify test/test.js > test_bundle.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/noyobo/learn-testling.git"
+  },
+  "testling": {
+    "files": "test/*.js",
+    "browsers": [
+      "ie/6..latest",
+      "chrome/22..latest",
+      "firefox/16..latest",
+      "safari/latest",
+      "opera/11.0..latest",
+      "iphone/6",
+      "ipad/6",
+      "android-browser/latest"
+    ]
   },
   "author": "",
   "license": "ISC",
