@@ -7,7 +7,8 @@
     "example": "example"
   },
   "scripts": {
-    "test": "tape test/*.js"
+    "test": "tape test/*.js",
+    "browserify": "browserify test/test.js > test/test_bundle.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,7 @@
   },
   "homepage": "https://github.com/noyobo/learn-testling",
   "devDependencies": {
+    "browserify": "^6.2.0",
     "tape": "^3.0.2"
   }
 }
