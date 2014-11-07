@@ -1,0 +1,25 @@
+{
+  "name": "learn-testling",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "tape test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/noyobo/learn-testling.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/noyobo/learn-testling/issues"
+  },
+  "homepage": "https://github.com/noyobo/learn-testling",
+  "devDependencies": {
+    "tape": "^3.0.2"
+  }
+}
