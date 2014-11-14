@@ -358,7 +358,7 @@ function base64Write (buf, string, offset, length) {
 }
 
 function utf16leWrite (buf, string, offset, length) {
-  var charsWritten = blitBuffer(utf16leToBytes(string), buf, offset, length)
+  var charsWritten = blitBuffer(utf16leToBytes(string), buf, offset, length, 2)
   return charsWritten
 }
 
@@ -1042,7 +1042,8 @@ function base64ToBytes (str) {
   return base64.toByteArray(str)
 }
 
-function blitBuffer (src, dst, offset, length) {
+function blitBuffer (src, dst, offset, length, unitSize) {
+  if (unitSize) length -= length % unitSize;
   for (var i = 0; i < length; i++) {
     if ((i + offset >= dst.length) || (i >= src.length))
       break
@@ -1182,7 +1183,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
 },{}],5:[function(require,module,exports){
-exports.read = function(buffer, offset, isLE, mLen, nBytes) {
+exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m,
       eLen = nBytes * 8 - mLen - 1,
       eMax = (1 << eLen) - 1,
@@ -1190,32 +1191,32 @@ exports.read = function(buffer, offset, isLE, mLen, nBytes) {
       nBits = -7,
       i = isLE ? (nBytes - 1) : 0,
       d = isLE ? -1 : 1,
-      s = buffer[offset + i];
+      s = buffer[offset + i]
 
-  i += d;
+  i += d
 
-  e = s & ((1 << (-nBits)) - 1);
-  s >>= (-nBits);
-  nBits += eLen;
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8);
+  e = s & ((1 << (-nBits)) - 1)
+  s >>= (-nBits)
+  nBits += eLen
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
 
-  m = e & ((1 << (-nBits)) - 1);
-  e >>= (-nBits);
-  nBits += mLen;
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8);
+  m = e & ((1 << (-nBits)) - 1)
+  e >>= (-nBits)
+  nBits += mLen
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
 
   if (e === 0) {
-    e = 1 - eBias;
+    e = 1 - eBias
   } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity);
+    return m ? NaN : ((s ? -1 : 1) * Infinity)
   } else {
-    m = m + Math.pow(2, mLen);
-    e = e - eBias;
+    m = m + Math.pow(2, mLen)
+    e = e - eBias
   }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen);
-};
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+}
 
-exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
+exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   var e, m, c,
       eLen = nBytes * 8 - mLen - 1,
       eMax = (1 << eLen) - 1,
@@ -1223,49 +1224,49 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
       rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0),
       i = isLE ? 0 : (nBytes - 1),
       d = isLE ? 1 : -1,
-      s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0;
+      s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
 
-  value = Math.abs(value);
+  value = Math.abs(value)
 
   if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0;
-    e = eMax;
+    m = isNaN(value) ? 1 : 0
+    e = eMax
   } else {
-    e = Math.floor(Math.log(value) / Math.LN2);
+    e = Math.floor(Math.log(value) / Math.LN2)
     if (value * (c = Math.pow(2, -e)) < 1) {
-      e--;
-      c *= 2;
+      e--
+      c *= 2
     }
     if (e + eBias >= 1) {
-      value += rt / c;
+      value += rt / c
     } else {
-      value += rt * Math.pow(2, 1 - eBias);
+      value += rt * Math.pow(2, 1 - eBias)
     }
     if (value * c >= 2) {
-      e++;
-      c /= 2;
+      e++
+      c /= 2
     }
 
     if (e + eBias >= eMax) {
-      m = 0;
-      e = eMax;
+      m = 0
+      e = eMax
     } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen);
-      e = e + eBias;
+      m = (value * c - 1) * Math.pow(2, mLen)
+      e = e + eBias
     } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen);
-      e = 0;
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
+      e = 0
     }
   }
 
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8);
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
 
-  e = (e << mLen) | m;
-  eLen += mLen;
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8);
+  e = (e << mLen) | m
+  eLen += mLen
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
 
-  buffer[offset + i - d] |= s * 128;
-};
+  buffer[offset + i - d] |= s * 128
+}
 
 },{}],6:[function(require,module,exports){
 
@@ -4231,20 +4232,12 @@ function createExitHarness (conf) {
     
     if (conf.exit === false) return harness;
     if (!canEmitExit || !canExit) return harness;
-    
-    var _error;
 
-    process.on('uncaughtException', function (err) {
-        if (err && err.code === 'EPIPE' && err.errno === 'EPIPE'
-        && err.syscall === 'write') return;
-        
-        _error = err
-        
-        throw err
-    })
+    var inErrorState = false;
 
     process.on('exit', function (code) {
-        if (_error) {
+        // let the process exit cleanly.
+        if (code !== 0) {
             return
         }
 
@@ -4546,7 +4539,6 @@ function has (obj, prop) {
 }).call(this,require('_process'))
 },{"_process":11,"events":7,"inherits":33,"object-inspect":34,"resumer":35,"through":36}],28:[function(require,module,exports){
 (function (process,__dirname){
-var Stream = require('stream');
 var deepEqual = require('deep-equal');
 var defined = require('defined');
 var path = require('path');
@@ -4566,7 +4558,7 @@ var getTestArgs = function (name_, opts_, cb_) {
     var name = '(anonymous)';
     var opts = {};
     var cb;
-    
+
     for (var i = 0; i < arguments.length; i++) {
         var arg = arguments[i];
         var t = typeof arg;
@@ -4599,6 +4591,10 @@ function Test (name_, opts_, cb_) {
     this._cb = args.cb;
     this._progeny = [];
     this._ok = true;
+
+    if (args.opts.timeout !== undefined) {
+        this.timeoutAfter(args.opts.timeout);
+    }
 
     for (var prop in this) {
         this[prop] = (function bind(self, val) {
@@ -4652,6 +4648,18 @@ Test.prototype.plan = function (n) {
     this._plan = n;
     this.emit('plan', n);
 };
+
+Test.prototype.timeoutAfter = function(ms) {
+    if (!ms) throw new Error('timeoutAfter requires a timespan');
+    var self = this;
+    var timeout = setTimeout(function() {
+        self.fail('test timed out after ' + ms + 'ms');
+        self.end();
+    }, ms);
+    this.once('end', function() {
+        clearTimeout(timeout);
+    });
+}
 
 Test.prototype.end = function (err) { 
     var self = this;
@@ -4736,33 +4744,45 @@ Test.prototype._assert = function assert (ok, opts) {
         res.error = defined(extra.error, opts.error, new Error(res.name));
     }
     
-    var e = new Error('exception');
-    var err = (e.stack || '').split('\n');
-    var dir = path.dirname(__dirname) + '/';
-    
-    for (var i = 0; i < err.length; i++) {
-        var m = /^\s*\bat\s+(.+)/.exec(err[i]);
-        if (!m) continue;
+    if (!ok) {
+        var e = new Error('exception');
+        var err = (e.stack || '').split('\n');
+        var dir = path.dirname(__dirname) + '/';
         
-        var s = m[1].split(/\s+/);
-        var filem = /(\/[^:\s]+:(\d+)(?::(\d+))?)/.exec(s[1]);
-        if (!filem) {
-            filem = /(\/[^:\s]+:(\d+)(?::(\d+))?)/.exec(s[3]);
+        for (var i = 0; i < err.length; i++) {
+            var m = /^[^\s]*\s*\bat\s+(.+)/.exec(err[i]);
+            if (!m) {
+                continue;
+            }
             
-            if (!filem) continue;
+            var s = m[1].split(/\s+/);
+            var filem = /(\/[^:\s]+:(\d+)(?::(\d+))?)/.exec(s[1]);
+            if (!filem) {
+                filem = /(\/[^:\s]+:(\d+)(?::(\d+))?)/.exec(s[2]);
+                
+                if (!filem) {
+                    filem = /(\/[^:\s]+:(\d+)(?::(\d+))?)/.exec(s[3]);
+
+                    if (!filem) {
+                        continue;
+                    }
+                }
+            }
+            
+            if (filem[1].slice(0, dir.length) === dir) {
+                continue;
+            }
+            
+            res.functionName = s[0];
+            res.file = filem[1];
+            res.line = Number(filem[2]);
+            if (filem[3]) res.column = filem[3];
+            
+            res.at = m[1];
+            break;
         }
-        
-        if (filem[1].slice(0, dir.length) === dir) continue;
-        
-        res.functionName = s[0];
-        res.file = filem[1];
-        res.line = Number(filem[2]);
-        if (filem[3]) res.column = filem[3];
-        
-        res.at = m[1];
-        break;
     }
-    
+
     self.emit('result', res);
     
     var pendingAsserts = self._pendingAsserts();
@@ -4933,7 +4953,7 @@ Test.prototype.notDeepLooseEqual
 = Test.prototype.notLooseEqual
 = Test.prototype.notLooseEquals
 = function (a, b, msg, extra) {
-    this._assert(deepEqual(a, b), {
+    this._assert(!deepEqual(a, b), {
         message : defined(msg, 'should be equivalent'),
         operator : 'notDeepLooseEqual',
         actual : a,
@@ -4947,11 +4967,12 @@ Test.prototype['throws'] = function (fn, expected, msg, extra) {
         msg = expected;
         expected = undefined;
     }
+
     var caught = undefined;
+
     try {
         fn();
-    }
-    catch (err) {
+    } catch (err) {
         caught = { error : err };
         var message = err.message;
         delete err.message;
@@ -4963,6 +4984,11 @@ Test.prototype['throws'] = function (fn, expected, msg, extra) {
     if (expected instanceof RegExp) {
         passed = expected.test(caught && caught.error);
         expected = String(expected);
+    }
+
+    if (typeof expected === 'function') {
+        passed = caught.error instanceof expected;
+        caught.error = caught.error.constructor;
     }
 
     this._assert(passed, {
@@ -5009,8 +5035,9 @@ Test.skip = function (name_, _opts, _cb) {
 
 // vim: set softtabstop=4 shiftwidth=4:
 
-}).call(this,require('_process'),"/node_modules\\tape\\lib")
-},{"_process":11,"deep-equal":29,"defined":32,"events":7,"inherits":33,"path":10,"stream":23}],29:[function(require,module,exports){
+
+}).call(this,require('_process'),"/node_modules/tape/lib")
+},{"_process":11,"deep-equal":29,"defined":32,"events":7,"inherits":33,"path":10}],29:[function(require,module,exports){
 var pSlice = Array.prototype.slice;
 var objectKeys = require('./lib/keys.js');
 var isArguments = require('./lib/is_arguments.js');
@@ -5103,7 +5130,7 @@ function objEquiv(a, b, opts) {
     key = ka[i];
     if (!deepEqual(a[key], b[key], opts)) return false;
   }
-  return true;
+  return typeof a === typeof b;
 }
 
 },{"./lib/is_arguments.js":30,"./lib/keys.js":31}],30:[function(require,module,exports){
@@ -5148,7 +5175,7 @@ module.exports = function () {
 
 },{}],33:[function(require,module,exports){
 module.exports=require(8)
-},{"C:\\E\\github\\learn-testling\\node_modules\\browserify\\node_modules\\inherits\\inherits_browser.js":8}],34:[function(require,module,exports){
+},{"/Users/noyobo/home/github/learn-testling/node_modules/browserify/node_modules/inherits/inherits_browser.js":8}],34:[function(require,module,exports){
 module.exports = function inspect_ (obj, opts, depth, seen) {
     if (!opts) opts = {};
     
@@ -5354,7 +5381,7 @@ function through (write, end, opts) {
   stream.queue = stream.push = function (data) {
 //    console.error(ended)
     if(_ended) return stream
-    if(data == null) _ended = true
+    if(data === null) _ended = true
     buffer.push(data)
     drain()
     return stream
@@ -5426,7 +5453,7 @@ function through (write, end, opts) {
 var maxBy = require('../');
 var test = require('tape');
 
-test('simple comparisons', function (t) {
+test('simple ', function (t) {
     t.plan(1);
 
     var n = maxBy([9,3,4], function (x) { return x % 3 });
