@@ -15,7 +15,7 @@
     "url": "https://github.com/noyobo/learn-testling.git"
   },
   "testling": {
-    "files": "test/*.js",
+    "html": "test/test.html",
     "browsers": [
       "ie/6..latest",
       "chrome/22..latest",
