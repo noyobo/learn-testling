@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/noyobo/learn-testling",
   "devDependencies": {
-    "browserify": "^6.2.0",
-    "tape": "^3.0.2"
+    "browserify": "^16.1.1",
+    "tape": "^4.9.0"
   }
 }
